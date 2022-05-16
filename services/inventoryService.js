@@ -14,7 +14,7 @@ class InventoryService {
     }
 
     static updateInventoryItem(_id, item) {
-        return Inventory.updateOne({_id}, item);
+        return Inventory.findByIdAndUpdate({_id}, item, {new: true});
     }
 }
 

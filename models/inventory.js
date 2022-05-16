@@ -20,6 +20,13 @@ const InventorySchema = new Schema({
             message: '{VALUE} is not an integer value'
         }
     }
+}, {
+    toJSON: {
+        transform: (doc, obj) => {
+            const {__v, _id, ...rest} = obj;
+            return {id: _id, ...rest};
+        }
+    }
 });
 
 module.exports = mongoose.model('Inventory', InventorySchema);
