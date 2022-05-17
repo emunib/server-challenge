@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const InventoryController = require('../controllers/inventoryController');
+const {InventoryController} = require('../controllers');
 
 router.get('/', InventoryController.getAllInventoryItems);
 router.post('/', InventoryController.addInventoryItem);

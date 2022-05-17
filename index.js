@@ -4,7 +4,7 @@ require('dotenv').config();
 const {PORT} = process.env;
 const cors = require('cors');
 const mongoose = require('mongoose');
-const inventoryRoutes = require('./routes/inventoryRoutes');
+const {InventoryRoutes, WarehouseRoutes} = require('./routes');
 
 // connect to db
 const connectDB = async () => {
@@ -23,7 +23,8 @@ app.use(cors());
 app.use(express.json());
 
 // routes
-app.use('/api/inventory', inventoryRoutes);
+app.use('/api/inventory', InventoryRoutes);
+app.use('/api/warehouse', WarehouseRoutes);
 
 // start server
 app.listen(PORT, () => {

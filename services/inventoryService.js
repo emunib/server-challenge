@@ -1,20 +1,47 @@
-const Inventory = require('../models/inventory');
+const {Inventory, Warehouse} = require('../models');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 class InventoryService {
     static getAllInventoryItems() {
-        return Inventory.find();
+        return Warehouse.aggregate().group({
+            _id: null,
+            inventory: {
+                $push: '$inventory'
+            }
+        })
+            .project({
+                _id: 0,
+                inventory: {
+                    $reduce: {
+                        input: '$inventory',
+                        initialValue: [],
+                        in: {
+                            $concatArrays: [
+                                '$$this', '$$value'
+                            ]
+                        }
+                    }
+                }
+            });
     }
 
-    static addInventoryItem(item) {
-        return new Inventory(item).save();
+    static addInventoryItem(warehouseId, item) {
+        item._id = new ObjectId();
+
+        return Warehouse.findOneAndUpdate({
+            _id: warehouseId,
+            'inventory._id': {$ne: item._id}
+        }, {
+            $push: {inventory: item}
+        }, {new: true});
     }
 
-    static deleteInventoryItem(_id) {
-        return Inventory.findByIdAndDelete(_id);
+    static deleteInventoryItem(itemId) {
+        return Warehouse.findOneAndUpdate({'inventory._id': itemId}, {$pull: {inventory: {_id: itemId}}}, {new: true});
     }
 
-    static updateInventoryItem(_id, item) {
-        return Inventory.findByIdAndUpdate({_id}, item, {new: true});
+    static updateInventoryItem(itemId, item) {
+        return Warehouse.findOneAndUpdate({'inventory._id': itemId}, {$set: {'inventory.$': item}}, {new: true});
     }
 }
 

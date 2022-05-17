@@ -1,27 +1,27 @@
 const mongoose = require('mongoose');
 const {Schema} = require('mongoose');
+const {InventorySchema} = require('./inventory');
 
-const InventorySchema = new Schema({
-    itemName: {
+const WarehouseSchema = new Schema({
+    name: {
         type: String,
         required: true
     },
-    warehouseId: {
+    city: {
         type: String,
         required: true
     },
-    description: {
+    country: {
         type: String,
         required: true
     },
-    quantity: {
-        type: Number,
-        required: true,
-        min: 0,
-        validate: {
-            validator: Number.isInteger,
-            message: '{VALUE} is not an integer value'
-        }
+    address: {
+        type: String,
+        required: true
+    },
+    inventory: {
+        type: [InventorySchema],
+        required: true
     }
 }, {
     toJSON: {
@@ -32,4 +32,4 @@ const InventorySchema = new Schema({
     }
 });
 
-module.exports = {InventorySchema, InventoryModel: mongoose.model('Inventory', InventorySchema)};
+module.exports = {WarehouseSchema, WarehouseModel: mongoose.model('Warehouse', WarehouseSchema)};

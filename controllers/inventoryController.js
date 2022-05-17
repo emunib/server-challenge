@@ -1,12 +1,12 @@
-const InventoryService = require('../services/inventoryService');
-const InventoryValidationSchema = require('../validations/inventoryValidations');
+const {InventoryService} = require('../services');
+const {InventoryValidation} = require('../validations');
 const {isValidObjectId} = require('../utilites');
 
 class InventoryController {
     static async getAllInventoryItems(req, res) {
         try {
             const items = await InventoryService.getAllInventoryItems();
-            res.json(items);
+            res.json(items[0]?.inventory || []);
         } catch (err) {
             console.log('Error getting all inventory items', err);
             res.status(500).send('Internal server error');
@@ -15,13 +15,18 @@ class InventoryController {
 
     static async addInventoryItem(req, res) {
         try {
-            const {error, value} = InventoryValidationSchema.validate(req.body);
+            const {error, value} = InventoryValidation.validate(req.body);
             if (error) {
                 res.sendStatus(400);
                 return;
             }
 
-            const addedItem = await InventoryService.addInventoryItem(value);
+            if (!isValidObjectId(req.body.warehouseId)) {
+                res.sendStatus(404);
+                return;
+            }
+
+            const addedItem = await InventoryService.addInventoryItem(value.warehouseId, value);
             res.status(201).json(addedItem);
         } catch (err) {
             console.log('Error adding inventory item', err);
@@ -58,13 +63,16 @@ class InventoryController {
                 return;
             }
 
-            const {error, value} = InventoryValidationSchema.validate(req.body);
+            const {error, value} = InventoryValidation.validate(req.body);
             if (error) {
                 res.sendStatus(400);
                 return;
             }
 
-            const updatedItem = await InventoryService.updateInventoryItem(id, value);
+            // make sure wid is valid
+
+
+            const updatedItem = await InventoryService.updateInventoryItem(id, {_id: id, ...value});
             if (!updatedItem) {
                 res.sendStatus(404);
                 return;
