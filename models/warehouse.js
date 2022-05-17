@@ -26,8 +26,8 @@ const WarehouseSchema = new Schema({
 }, {
     toJSON: {
         transform: (doc, obj) => {
-            const {__v, _id, ...rest} = obj;
-            return {id: _id, ...rest};
+            const {__v, ...rest} = obj;
+            return rest;
         }
     }
 });

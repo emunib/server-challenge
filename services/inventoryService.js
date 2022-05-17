@@ -1,47 +1,129 @@
-const {Inventory, Warehouse} = require('../models');
+const {Warehouse} = require('../models');
+const {InventoryValidation} = require('../validations');
+const {isValidObjectId} = require('../utilites');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 class InventoryService {
-    static getAllInventoryItems() {
-        return Warehouse.aggregate().group({
-            _id: null,
-            inventory: {
-                $push: '$inventory'
-            }
-        })
-            .project({
-                _id: 0,
-                inventory: {
+    static async getAllInventoryItems() {
+        const items = await Warehouse.aggregate()
+            .group({ // make an array of containing all the inventory arrays
+                _id: null, inventory: {
+                    $push: '$inventory'
+                }
+            })
+            .project({ // flatten the 2d array
+                _id: 0, inventory: {
                     $reduce: {
-                        input: '$inventory',
-                        initialValue: [],
-                        in: {
-                            $concatArrays: [
-                                '$$this', '$$value'
-                            ]
+                        input: '$inventory', initialValue: [], in: {
+                            $concatArrays: ['$$this', '$$value']
                         }
                     }
                 }
             });
+
+        return {code: 200, data: items[0]?.inventory || []}; // return inventory if it exists, [] otherwise
     }
 
-    static addInventoryItem(warehouseId, item) {
-        item._id = new ObjectId();
+    static async addInventoryItem(item) {
+        // validate item format
+        const {error} = InventoryValidation.validate(item);
+        if (error) {
+            return {code: 400, data: 'Invalid request body format'};
+        }
 
-        return Warehouse.findOneAndUpdate({
-            _id: warehouseId,
+        // check warehouseId format
+        if (!isValidObjectId(item.warehouseId)) {
+            return {code: 404, data: 'No warehouse with given id was found'};
+        }
+
+        item._id = new ObjectId(); // add new id
+
+        // find warehouse using warehouseId, add item to its inventory, return updated warehouse
+        const updatedWarehouse = await Warehouse.findOneAndUpdate({
+            _id: item.warehouseId,
             'inventory._id': {$ne: item._id}
         }, {
             $push: {inventory: item}
-        }, {new: true});
+        }, {
+            new: true
+        });
+
+        if (!updatedWarehouse) { // no warehouse was updated
+            return {code: 404, data: 'No warehouse with given id was found'};
+        }
+
+        return {code: 201, data: item};
     }
 
-    static deleteInventoryItem(itemId) {
-        return Warehouse.findOneAndUpdate({'inventory._id': itemId}, {$pull: {inventory: {_id: itemId}}}, {new: true});
+    static async deleteInventoryItem(itemId) {
+        if (!isValidObjectId(itemId)) { // check itemId format
+            return {code: 404, data: 'No inventory item with given id was found'};
+        }
+
+        // find warehouse with that has in its inventory an item with the given id, remove that item from the array
+        // and return warehouse with its inventory containing the removed item
+        const deletedItems = await Warehouse.findOneAndUpdate({
+            'inventory._id': itemId
+        }, {
+            $pull: {inventory: {_id: itemId}}
+        }, {
+            projection: {
+                inventory: {'$elemMatch': {_id: itemId}}
+            }
+        });
+
+        if (!deletedItems) { // no item was deleted
+            return {code: 404, data: 'No inventory item with given id was found'};
+        }
+
+        return {code: 200, data: deletedItems.inventory[0]}; // return the deleted inventory item
     }
 
-    static updateInventoryItem(itemId, item) {
-        return Warehouse.findOneAndUpdate({'inventory._id': itemId}, {$set: {'inventory.$': item}}, {new: true});
+    static async updateInventoryItem(itemId, item) {
+        if (!isValidObjectId(itemId)) { // check itemId format
+            return {code: 404, data: 'No inventory item with given id was found'};
+        }
+
+        // validate item format
+        const {error} = InventoryValidation.validate(item);
+        if (error) {
+            return {code: 400, data: 'Invalid request body format'};
+        }
+
+        if (!isValidObjectId(item.warehouseId)) { // check warehouseId format
+            return {code: 404, data: 'No warehouse with given id was found'};
+        }
+
+        const warehouse = await Warehouse.findOne({_id: item.warehouseId}); // find warehouse with new warehouseId
+        if (!warehouse) { // no warehouse with the new id
+            return {code: 404, data: 'No warehouse with given id was found'};
+        }
+
+        item._id = itemId; // add id to item
+
+        // find warehouse whose inventory contains an item with the given id, and remove the item, return the warehouse
+        let updatedWarehouse = await Warehouse.findOneAndUpdate({
+            'inventory._id': itemId
+        }, {
+            $pull: {inventory: {_id: itemId}}
+        }, {
+            new: true
+        });
+
+        if (!updatedWarehouse) { // no warehouse was modified
+            return {code: 404, data: 'No inventory item with given id was found'};
+        }
+
+        // having removed the old item, add the updated item to the appropriate warehouse
+        await Warehouse.findOneAndUpdate({
+            _id: item.warehouseId
+        }, {
+            $push: {inventory: item}
+        }, {
+            new: true
+        });
+
+        return {code: 200, data: item}; // return the updated item
     }
 }
 
