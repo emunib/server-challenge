@@ -1,4 +1,3 @@
-import './App.css';
 import {BrowserRouter, NavLink, Redirect, Route, Switch} from 'react-router-dom';
 import EditPage from './pages/EditPage';
 import InventoryPage from './pages/InventoryPage';

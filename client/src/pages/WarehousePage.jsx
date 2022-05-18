@@ -1,6 +1,8 @@
 import {useEffect, useState} from 'react';
 import axios from 'axios';
 
+const API_URI = process.env.REACT_APP_API_URI || '/api';
+
 function WarehousePage() {
     const [warehouses, setWarehouse] = useState([]);
 
@@ -11,7 +13,7 @@ function WarehousePage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        await axios.post('/api/warehouse', {
+        await axios.post(`${API_URI}/warehouse`, {
             name: e.target.name.value,
             address: e.target.address.value,
             city: e.target.city.value,
@@ -23,7 +25,7 @@ function WarehousePage() {
     };
 
     const getWarehouse = async () => {
-        const res = await axios.get('/api/warehouse');
+        const res = await axios.get(`${API_URI}/warehouse`);
         setWarehouse(res.data);
     };
 

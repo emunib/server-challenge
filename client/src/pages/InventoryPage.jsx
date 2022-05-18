@@ -2,6 +2,8 @@ import axios from 'axios';
 import {useEffect, useState} from 'react';
 import {useHistory} from 'react-router-dom';
 
+const API_URI = process.env.REACT_APP_API_URI || '/api';
+
 function InventoryPage() {
     const history = useHistory();
     const [inventory, setInventory] = useState([]);
@@ -14,7 +16,7 @@ function InventoryPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        await axios.post('/api/inventory', {
+        await axios.post(`${API_URI}/inventory`, {
             itemName: e.target.name.value,
             description: e.target.description.value,
             quantity: e.target.quantity.value,
@@ -26,15 +28,15 @@ function InventoryPage() {
     };
 
     const getData = async () => {
-        let res = await axios.get('/api/inventory');
+        let res = await axios.get(`${API_URI}/inventory`);
         setInventory(res.data);
 
-        res = await axios.get('/api/warehouse');
+        res = await axios.get(`${API_URI}/warehouse`);
         setWarehouse(res.data);
     };
 
     const handleClick = async (id) => {
-        await axios.delete(`/api/inventory/${id}`);
+        await axios.delete(`${API_URI}/inventory/${id}`);
         getData();
     };
 
