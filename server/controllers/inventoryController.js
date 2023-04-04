@@ -1,43 +1,39 @@
 const {InventoryService} = require('../services');
 
 class InventoryController {
-    static async getAllInventoryItems(req, res) {
+    static async getAllInventoryItems() {
         try {
-            const {code, data} = await InventoryService.getAllInventoryItems();
-            res.status(code).json(data);
+            return InventoryService.getAllInventoryItems();
         } catch (err) {
             console.log('Error getting all inventory items: ', err);
-            res.status(500).send('Internal server error');
+            return {code: 500, data: 'Internal server error'};
         }
     }
 
-    static async addInventoryItem(req, res) {
+    static async addInventoryItem(item) {
         try {
-            const {code, data} = await InventoryService.addInventoryItem(req.body);
-            res.status(code).json(data);
+            return InventoryService.addInventoryItem(item);
         } catch (err) {
             console.log('Error adding inventory item: ', err);
-            res.status(500).send('Internal server error');
+            return {code: 500, data: 'Internal server error'};
         }
     }
 
-    static async deleteInventoryItem(req, res) {
+    static async deleteInventoryItem(itemId) {
         try {
-            const {code, data} = await InventoryService.deleteInventoryItem(req.params.id);
-            res.status(code).json(data);
+            return InventoryService.deleteInventoryItem(itemId);
         } catch (err) {
             console.log('Error deleting inventory item: ', err);
-            res.status(500).send('Internal server error');
+            return {code: 500, data: 'Internal server error'};
         }
     }
 
-    static async updateInventoryItem(req, res) {
+    static async updateInventoryItem(itemId, item) {
         try {
-            const {code, data} = await InventoryService.updateInventoryItem(req.params.id, req.body);
-            res.status(code).json(data);
+            return InventoryService.updateInventoryItem(itemId, item);
         } catch (err) {
             console.log('Error updating inventory item: ', err);
-            res.status(500).send('Internal server error');
+            return {code: 500, data: 'Internal server error'};
         }
     }
 }
