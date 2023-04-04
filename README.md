@@ -1,5 +1,5 @@
 
-# TV Tracker
+# Inventory Manager
 
 An inventory manager app with a basic UI developed for a Shopify application.
 
