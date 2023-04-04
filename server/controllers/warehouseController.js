@@ -1,23 +1,21 @@
 const {WarehouseService} = require('../services');
 
 class WarehouseController {
-    static async getAllWarehouses(req, res) {
+    static async getAllWarehouses() {
         try {
-            const {code, data} = await WarehouseService.getAllWarehouses();
-            res.status(code).json(data);
-        } catch (error) {
-            console.log('Error getting all warehouses: ', error);
-            res.status(500).send('Internal server error');
+            return await WarehouseService.getAllWarehouses();
+        } catch (err) {
+            console.log('Error getting all warehouses: ', err);
+            return {code: 500, data: 'Internal server error'};
         }
     }
 
-    static async addWarehouse(req, res) {
+    static async addWarehouse(warehouse) {
         try {
-            const {code, data} = await WarehouseService.addWarehouse(req.body);
-            res.status(code).json(data);
+            return WarehouseService.addWarehouse(warehouse);
         } catch (err) {
             console.log('Error adding warehouse: ', err);
-            res.status(500).send('Internal server error');
+            return {code: 500, data: 'Internal server error'};
         }
     }
 }
