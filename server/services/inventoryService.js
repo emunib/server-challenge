@@ -1,12 +1,10 @@
 const {Warehouse} = require('../models');
-const {InventoryValidation} = require('../validations');
-const {isValidObjectId} = require('../utilites');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 class InventoryService {
     static async getAllInventoryItems() {
         const items = await Warehouse.aggregate()
-            .group({ // make an array of containing all the inventory arrays
+            .group({ // make an array of all the inventory arrays from each warehouse
                 _id: null, inventory: {
                     $push: '$inventory'
                 }
@@ -25,18 +23,7 @@ class InventoryService {
     }
 
     static async addInventoryItem(item) {
-        // validate item format
-        const {error} = InventoryValidation.validate(item);
-        if (error) {
-            return {code: 400, data: 'Invalid request body format'};
-        }
-
-        // check warehouseId format
-        if (!isValidObjectId(item.warehouseId)) {
-            return {code: 404, data: 'No warehouse with given id was found'};
-        }
-
-        item._id = new ObjectId(); // add new id
+        item._id = new ObjectId(); // add new id to item
 
         // find warehouse using warehouseId, add item to its inventory, return updated warehouse
         const updatedWarehouse = await Warehouse.findOneAndUpdate({
@@ -56,10 +43,6 @@ class InventoryService {
     }
 
     static async deleteInventoryItem(itemId) {
-        if (!isValidObjectId(itemId)) { // check itemId format
-            return {code: 404, data: 'No inventory item with given id was found'};
-        }
-
         // find warehouse with that has in its inventory an item with the given id, remove that item from the array
         // and return warehouse with its inventory containing the removed item
         const deletedItems = await Warehouse.findOneAndUpdate({
@@ -80,20 +63,6 @@ class InventoryService {
     }
 
     static async updateInventoryItem(itemId, item) {
-        if (!isValidObjectId(itemId)) { // check itemId format
-            return {code: 404, data: 'No inventory item with given id was found'};
-        }
-
-        // validate item format
-        const {error} = InventoryValidation.validate(item);
-        if (error) {
-            return {code: 400, data: 'Invalid request body format'};
-        }
-
-        if (!isValidObjectId(item.warehouseId)) { // check warehouseId format
-            return {code: 404, data: 'No warehouse with given id was found'};
-        }
-
         const warehouse = await Warehouse.findOne({_id: item.warehouseId}); // find warehouse with new warehouseId
         if (!warehouse) { // no warehouse with the new id
             return {code: 404, data: 'No warehouse with given id was found'};
