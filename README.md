@@ -1,7 +1,7 @@
 
 # Inventory Manager
 
-An inventory manager app with a basic UI developed for a Shopify application.
+An inventory manager app made to practice a layered server architecture using Node.js and Express, as well as a bare-bones React frontend to test the server.
 
 ## Demo
 
@@ -9,7 +9,7 @@ A live version of the app can be found at [https://emunib-shopify-backend-challe
 
 ## Environment Variables
 
-To run this project locally, you will need to add the following environment variables to a .env file located in the server dirctory:
+To run this project locally, you will need to add the following environment variables to a .env file located in the server directory:
 
 ```
 PORT=8080
