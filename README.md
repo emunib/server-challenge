@@ -5,7 +5,7 @@ An inventory manager app made to practice a layered server architecture using No
 
 ## Demo
 
-A live version of the app can be found at [https://emunib-shopify-backend-challenge.netlify.app](https://emunib-shopify-backend-challenge.netlify.app)
+A live version of the app can be found at [https://emunib-server-challenge.netlify.app](https://emunib-server-challenge.netlify.app)
 
 ## Environment Variables
 
@@ -27,7 +27,7 @@ To run the project run the following:
 
 ```bash
 # clone the repository
-$ git clone https://github.com/emunib/shopify-backend-challenge.git
+$ git clone https://github.com/emunib/server-challenge.git
 
 # go into the server
 $ cd shopify-backend-challenge/server
