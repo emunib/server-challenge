@@ -1,12 +1,15 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
-const {PORT} = process.env;
+const {PORT} = process.env || 8080;
 const cors = require('cors');
 const mongoose = require('mongoose');
 const {InventoryRoutes, WarehouseRoutes} = require('./routes');
 
-// connect to db
+/**
+ * Connects to MongoDB using URI from .env file.
+ * @returns {Promise<void>}
+ */
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.DB_URI);
@@ -16,6 +19,7 @@ const connectDB = async () => {
     }
 };
 
+// connect to database asynchronously
 connectDB();
 
 // middleware

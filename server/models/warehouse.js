@@ -24,7 +24,7 @@ const WarehouseSchema = new Schema({
         required: true
     }
 }, {
-    toJSON: {
+    toJSON: {  // remove the __v property when converting document to json object
         transform: (doc, obj) => {
             const {__v, ...rest} = obj;
             return rest;

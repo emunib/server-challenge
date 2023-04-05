@@ -2,6 +2,10 @@ const {Warehouse} = require('../models');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 class InventoryService {
+    /**
+     * Gets all inventory items from all warehouses. Returns a 200 code with an array of inventory documents.
+     * @returns {Promise<{code: number, data: ([]|*|*[])}>}
+     */
     static async getAllInventoryItems() {
         const items = await Warehouse.aggregate()
             .group({ // make an array of all the inventory arrays from each warehouse
@@ -22,6 +26,11 @@ class InventoryService {
         return {code: 200, data: items[0]?.inventory || []}; // return inventory if it exists, [] otherwise
     }
 
+    /**
+     * Given a valid inventory object adds it to appropriate warehouse in the database. If no warehouse with the given id is found returns a 404 code, otherwise returns 201 code with added warehouse object.
+     * @param item a valid inventory object.
+     * @returns {Promise<{code: number, data: string}|{code: number, data}>}
+     */
     static async addInventoryItem(item) {
         item._id = new ObjectId(); // add new id to item
 
@@ -42,8 +51,13 @@ class InventoryService {
         return {code: 201, data: item};
     }
 
+    /**
+     * Removes the inventory item with the given id from the database. If no inventory item with the given id is found returns a 404 code, otherwise returns 200 code with deleted inventory object.
+     * @param itemId a inventory item id
+     * @returns {Promise<{code: number, data: string}|{code: number, data: *}>}
+     */
     static async deleteInventoryItem(itemId) {
-        // find warehouse with that has in its inventory an item with the given id, remove that item from the array
+        // find warehouse that has in its inventory an item with the given id, remove that item from the array
         // and return warehouse with its inventory containing the removed item
         const deletedItems = await Warehouse.findOneAndUpdate({
             'inventory._id': itemId
@@ -62,6 +76,12 @@ class InventoryService {
         return {code: 200, data: deletedItems.inventory[0]}; // return the deleted inventory item
     }
 
+    /**
+     * Replaces the inventory item with the given id with the given valid inventory item in the database. If no inventory item with the given id is found returns a 404 code, otherwise returns 200 code with updated inventory object.
+     * @param itemId a inventory item id
+     * @param item a valid inventory item
+     * @returns {Promise<{code: number, data: string}|{code: number, data}>}
+     */
     static async updateInventoryItem(itemId, item) {
         const warehouse = await Warehouse.findOne({_id: item.warehouseId}); // find warehouse with new warehouseId
         if (!warehouse) { // no warehouse with the new id
